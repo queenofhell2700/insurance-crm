@@ -1,0 +1,374 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Advisor Copilot</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        /* all your CSS from the first chunks */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        /* ... rest of your CSS unchanged ... */
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <span class="logo-icon">🤖</span>
+                <span>AI Advisor Copilot</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link">Dashboard</a></li>
+                <li><a href="/customers/" class="nav-link">Customers</a></li>
+                <li><a href="/policies/" class="nav-link">Policies</a></li>
+
+                <!-- added new -->
+                <li class="nav-user" style="position: relative;">
+                    <span class="user-name" onclick="openProfileModal()" style="cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: background 0.2s;">
+                        {{ user.get_full_name|default:user.username }}
+                    </span>
+                    <form method="POST" action="/logout/" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link logout-link" style="background: none; border: none; cursor: pointer;">Logout</button>
+                    </form>
+                </li>
+                <!-- end of new -->
+            </ul>
+        </div>
+    </nav>
+
+
+    <!-- ===== PROFILE MODAL ===== -->
+    <div id="profileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 16px; padding: 40px; max-width: 500px; width: 90%; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;">
+            <span onclick="closeProfileModal()" style="position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #666;">&times;</span>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px; color: white; font-size: 32px; font-weight: bold;">
+                    {{ user.username|first|upper }}
+                </div>
+                <h2 id="modal-username" style="margin: 0; color: #333;">{{ user.get_full_name|default:user.username }}</h2>
+                <p id="modal-email" style="color: #666; margin: 5px 0 0;">{{ user.email }}</p>
+            </div>
+            
+            <div style="display: grid; gap: 15px;">
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 12px;">
+                    <label style="display: block; font-size: 12px; color: #999; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Full Name</label>
+                    <p id="modal-fullname" style="margin: 0; color: #333; font-size: 16px;">{{ user.get_full_name|default:"N/A" }}</p>
+                </div>
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 12px;">
+                    <label style="display: block; font-size: 12px; color: #999; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Email</label>
+                    <p id="modal-email-display" style="margin: 0; color: #333; font-size: 16px;">{{ user.email }}</p>
+                </div>
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 12px;">
+                    <label style="display: block; font-size: 12px; color: #999; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Company</label>
+                    <p id="modal-company" style="margin: 0; color: #333; font-size: 16px;">{{ user.userprofile.company_name|default:"N/A" }}</p>
+                </div>
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 12px;">
+                    <label style="display: block; font-size: 12px; color: #999; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Username</label>
+                    <p style="margin: 0; color: #333; font-size: 16px;">{{ user.username }}</p>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; color: #999; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Joined</label>
+                    <p style="margin: 0; color: #333; font-size: 16px;">{{ user.date_joined|date:"M d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    @keyframes slideIn {
+        from { transform: translateY(-30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .user-name:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+    </style>
+
+    <script>
+    function openProfileModal() {
+        document.getElementById('profileModal').style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+        document.getElementById('profileModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('profileModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+    </script>
+
+    <div class="main-container">
+        {% if messages %}
+            <div class="alerts">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                        <button class="alert-close" onclick="this.parentElement.style.display='none';">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- === START: Dashboard overview (added) === -->
+        <!-- CHANGED: Hide overview section when customer is selected -->
+        {% if not selected_customer %}
+
+        <!--added new-->
+            
+        <!--end of new chunk-->
+        <div class="overview-section">
+            <div class="overview-header">
+                <h2>Dashboard overview</h2>
+                <span class="overview-subtitle">Last 30 days</span>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total customers</div>
+                    <div class="metric-value" id="totalCustomers">0</div>
+                    <div class="metric-change" id="customerGrowth">▲ 0% vs last month</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Active policies</div>
+                    <div class="metric-value" id="activePolicies">0</div>
+                    <div class="metric-change" id="policyGrowth">▲ 0% vs last month</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Qualified leads</div>
+                    <div class="metric-value" id="qualifiedLeads">0</div>
+                    <div class="metric-change" id="leadsGrowth">▲ 0% vs last month</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Conversion rate</div>
+                    <div class="metric-value" id="conversionRate">0%</div>
+                    <div class="metric-change" id="conversionGrowth">▲ 0% vs last month</div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-card">
+                    <h3>New customers by month</h3>
+                    <div class="chart-wrap"><canvas id="overviewBarChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <h3>Policy mix</h3>
+                    <div class="chart-wrap"><canvas id="overviewDonutChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <!-- === END: Dashboard overview (added) === -->
+
+        <div class="dashboard-container">
+            <div class="dashboard-section">
+                {% if selected_customer %}
+                    <div class="customer-summary">
+                        <h2>📋 Customer Summary</h2>
+                        <div class="customer-name">{{ selected_customer.full_name }}</div>
+                        <div class="customer-city">{{ selected_customer.city|default:"Not specified" }}</div>
+
+                        <div class="summary-field">
+                            <div class="summary-label">Age</div>
+                            <div class="summary-value">
+                                {{ selected_customer.age }}
+                                {% if selected_customer.age > 55 %}
+                                    <span class="badge badge-age">High Age (>55)</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="summary-field">
+                            <div class="summary-label">Family</div>
+                            <div class="summary-value">{{ family_count|default:"0" }} Members</div>
+                        </div>
+
+                        <div class="summary-field">
+                            <div class="summary-label">Existing Cover</div>
+                            <div class="summary-value">₹{{ selected_customer.existing_cover|default:"0" }}</div>
+                        </div>
+
+                        {% if ped_list %}
+                            <div class="summary-field">
+                                <div class="summary-label">Pre-Existing Diseases</div>
+                                <div class="summary-value">
+                                    {% for ped in ped_list %}
+                                        <span class="badge badge-info">{{ ped }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if missing_info %}
+                            <div class="missing-section">
+                                <div class="summary-label">Missing Information</div>
+                                {% for item in missing_info %}
+                                    <div class="missing-item">{{ item }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <p>👤 Select a customer to view details</p>
+                        <a href="/customers/" class="select-customer-btn">Browse Customers</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="dashboard-section">
+                {% if selected_customer and qualification_insight %}
+                    <div class="qualification-card">
+                        <div class="risk-band-header">
+                            <span class="risk-band-title">Risk Band Analysis</span>
+                            <span class="risk-badge risk-badge-{{ qualification_insight.risk_band|lower }}">
+                                {{ qualification_insight.risk_band }}
+                            </span>
+                        </div>
+
+                        <div class="confidence-box">
+                            <div class="confidence-label">Confidence Score</div>
+                            <div class="confidence-value">{{ qualification_insight.confidence|floatformat:0 }}%</div>
+                        </div>
+
+                        <ul class="insights-list">
+                            {% for insight in qualification_insight.insights %}
+                                <li>{{ insight }}</li>
+                            {% endfor %}
+                        </ul>
+
+                        {% if recommended_questions %}
+                            <div class="recommended-questions">
+                                <div class="recommended-header">
+                                    <span>⚡ Recommended Copilot Questions</span>
+                                    <button class="generate-btn">Generated Just Now</button>
+                                </div>
+                                {% for question in recommended_questions %}
+                                    <div class="question-item">
+                                        <div class="question-text">{{ question.question }}</div>
+                                        <div class="question-reason">{{ question.reason }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <p>📊 Select a customer to view qualification insights</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="dashboard-section">
+                {% if selected_customer %}
+                    <div class="chat-assistant">
+                        <div class="chat-header">💬 Advisor Chat Assistant</div>
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="chat-message">
+                                <div class="message-bubble assistant">
+                                    👋 Hi! I'm your AI advisor assistant. Ask me anything about this customer's profile.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-group">
+                            <input 
+                                type="text" 
+                                class="chat-input" 
+                                id="chatInput"
+                                placeholder="Ask a question..."
+                                data-customer-id="{{ selected_customer.id }}"
+                            />
+                            <button class="chat-send-btn" onclick="sendChatMessage()">Send</button>
+                        </div>
+                        <div class="output-versions">
+                            <strong>📝 Output Versions:</strong>
+                            {% if ai_output_versions %}
+                                {% for version in ai_output_versions %}
+                                    <div class="version-item">
+                                        <span class="version-badge">v{{ version.version_number }}</span>
+                                        <span>{{ version.created_at|date:"M d, H:i" }}</span>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="version-item">No versions yet</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <p>💬 Chat will be available after selecting a customer</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- === START: Dashboard overview charts (added) === -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script>
+    // Store chart instances globally so we can update them
+    window.barChart = new Chart(document.getElementById('overviewBarChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Mar','Apr','May','Jun','Jul','Aug'],
+            datasets: [{ 
+                data: [14,19,16,22,25,31], 
+                backgroundColor: '#2196F3', 
+                borderRadius: 4, 
+                maxBarThickness: 28 
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#666', font: { size: 11 } } },
+                y: { grid: { color: '#f0f0f0' }, ticks: { color: '#666', font: { size: 11 } } }
+            }
+        }
+    });
+
+    window.donutChart = new Chart(document.getElementById('overviewDonutChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Health', 'Life', 'Motor', 'Term'],
+            datasets: [{ 
+                data: [38, 27, 20, 15], 
+                backgroundColor: ['#2196F3','#7E57C2','#4CAF50','#FF9800'], 
+                borderWidth: 0 
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { 
+                legend: { 
+                    position: 'bottom', 
+                    labels: { 
+                        color: '#666', 
+                        font: { size: 11 }, 
+                        boxWidth: 10, 
+                        padding: 10 
+                    } 
+                } 
+            }
+        }
+    });
+    </script>
+    <!-- === END: Dashboard overview charts (added) === -->
+    <script src="{% static 'dashboard.js' %}"></script>
+</body>
+</html>

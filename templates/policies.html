@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policies - AI Advisor Copilot</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        .policies-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .policies-header {
+            margin-bottom: 2rem;
+        }
+
+        .policies-header h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .policies-header p {
+            color: #999;
+            font-size: 1rem;
+        }
+
+        .coming-soon {
+            background: linear-gradient(135deg, #667eea 0%, #2196F3 100%);
+            border-radius: 8px;
+            padding: 4rem 2rem;
+            text-align: center;
+            color: white;
+            margin-top: 2rem;
+        }
+
+        .coming-soon-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .coming-soon h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .coming-soon p {
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
+            opacity: 0.9;
+        }
+
+        .features-list {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            color: #333;
+        }
+
+        .feature-item {
+            padding: 1rem;
+            border-left: 4px solid #2196F3;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .feature-item strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <span class="logo-icon">🤖</span>
+                <span>AI Advisor Copilot</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/dashboard/" class="nav-link">Dashboard</a></li>
+                <li><a href="/customers/" class="nav-link">Customers</a></li>
+                <li><a href="/policies/" class="nav-link">Policies</a></li>
+                <li class="nav-user">
+                    <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                    <form method="POST" action="/logout/" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link logout-link" style="background: none; border: none; cursor: pointer;">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="policies-container">
+            <div class="policies-header">
+                <h1>📋 Policies</h1>
+                <p>All policies across your customers</p>
+            </div>
+
+            <div id="policies-loading">Loading policies...</div>
+            <div id="policies-empty" style="display:none;">No policies found yet.</div>
+            <div id="policies-list" class="features-list"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadPolicies() {
+            const loadingEl = document.getElementById('policies-loading');
+            const emptyEl = document.getElementById('policies-empty');
+            const listEl = document.getElementById('policies-list');
+
+            try {
+                const res = await fetch('/api/v1/policies/', {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+                const result = await res.json();
+                loadingEl.style.display = 'none';
+
+                if (result.status !== 'success' || !result.data.length) {
+                    emptyEl.style.display = 'block';
+                    return;
+                }
+
+                listEl.innerHTML = result.data.map(p => `
+                    <div class="feature-item">
+                        <strong>${p.policy_number || 'No Number'} — ${p.policy_type}</strong>
+                        Customer: ${p.customer_name}<br>
+                        Status: ${p.status}<br>
+                        Premium: ₹${p.premium} | Coverage: ₹${p.coverage_amount}
+                    </div>
+                `).join('');
+            } catch (err) {
+                loadingEl.textContent = 'Failed to load policies.';
+                console.error(err);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadPolicies);
+    </script>
+</body>
+</html>
