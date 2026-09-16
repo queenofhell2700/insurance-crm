@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-#NEW:load .env and Gemini key
+# NEW:load .env and Gemini key
 from dotenv import load_dotenv
 import os
 
@@ -136,7 +136,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",  #added
+        "rest_framework.authentication.SessionAuthentication",  # added
         "rest_framework.authentication.TokenAuthentication",
     ],
 }
@@ -147,10 +147,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
 ]
 
-LOGIN_REDIRECT_URL = 'dashboard'
-LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = "dashboard"
+LOGIN_URL = "login"
 
 # ===== CSRF Cookie Settings =====
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = "Lax"
