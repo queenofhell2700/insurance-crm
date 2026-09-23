@@ -34,10 +34,10 @@ SECRET_KEY = "django-insecure-y6uky2lv3s8eq*vjzxvqd5z^@esrrjk+32$q1^_x669vx==ar+
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'refreshing-reverence-production-9c03.up.railway.app',
-    '*.up.railway.app',  # If you have multiple Railway deployments
-    'localhost',
-    '127.0.0.1',
+    "refreshing-reverence-production-9c03.up.railway.app",
+    "*.up.railway.app",  # If you have multiple Railway deployments
+    "localhost",
+    "127.0.0.1",
 ]
 
 
