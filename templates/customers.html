@@ -318,7 +318,7 @@
         const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
 
         try {
-            const response = await fetch('/api/customers/create/', {
+            const response = await fetch('/api/v1/customers/create/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
