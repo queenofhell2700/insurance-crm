@@ -14,6 +14,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from dotenv import load_dotenv
 import os
 
+import dj_database_url
+
 load_dotenv()
 
 NVIDIA_API_KEY = os.environ.get("NVIDIA_API_KEY")
@@ -96,12 +98,31 @@ WSGI_APPLICATION = "insurance_project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
+"""DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
-}
+}"""
+
+# Database
+# https://docs.djangoproject.com/en/6.0/ref/settings/#database
+
+if os.environ.get("DATABASE_URL"):
+    # Production: Use PostgreSQL from Railway
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=os.environ.get("DATABASE_URL"), conn_max_age=600
+        )
+    }
+else:
+    # Local: Use SQLite
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
