@@ -2,6 +2,7 @@ from django import views
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from django.shortcuts import redirect
 
 # CHANGED: import CustomLoginView instead of login_view
 from advisors.views import signup_view, CustomLoginView, dashboard
